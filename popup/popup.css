@@ -1,0 +1,22 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 300px;
+  min-height: 150px;
+  font-family: sans-serif;
+  background: #1e1e1e;
+  color: #ffffff;
+}
+
+.container {
+  padding: 20px;
+}
+
+h1 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
