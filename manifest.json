@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Screen Code",
-  "version": "0.0.0",
-  "description": "Screen Code Extension",
+  "version": "1.0.0",
+  "description": "Inspectez et capturez n'importe quel élément d'une page web en un clic, puis exportez-le en PNG.",
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
