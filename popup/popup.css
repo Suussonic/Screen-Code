@@ -5,18 +5,104 @@
 }
 
 body {
-  width: 300px;
-  min-height: 150px;
-  font-family: sans-serif;
-  background: #1e1e1e;
-  color: #ffffff;
+  width: 320px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0f0f13;
+  color: #e2e8f0;
 }
 
 .container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   padding: 20px;
 }
 
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid #2a2a3a;
+  padding-bottom: 14px;
+}
+
+.logo {
+  font-family: 'Consolas', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: #64c8ff;
+  background: #1a1a2e;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #2e4a6a;
+  letter-spacing: 0.5px;
+}
+
 h1 {
-  font-size: 18px;
-  margin-bottom: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #f0f4ff;
+  letter-spacing: 0.3px;
+}
+
+/* ── Main ── */
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: #8892a4;
+  line-height: 1.5;
+}
+
+/* ── Bouton Capture ── */
+.btn-capture {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f0f13;
+  background: linear-gradient(135deg, #64c8ff 0%, #3a8fd4 100%);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 4px 16px rgba(100, 200, 255, 0.25);
+}
+
+.btn-capture:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-capture:active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.btn-capture svg {
+  flex-shrink: 0;
+}
+
+/* ── Footer ── */
+footer {
+  border-top: 1px solid #2a2a3a;
+  padding-top: 10px;
+}
+
+.status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4caf87;
+  display: inline-block;
 }
