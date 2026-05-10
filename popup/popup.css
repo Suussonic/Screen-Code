@@ -44,6 +44,27 @@ h1 {
   font-weight: 600;
   color: #f0f4ff;
   letter-spacing: 0.3px;
+  flex: 1;
+}
+
+.btn-settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: 1px solid #2a2a3a;
+  border-radius: 7px;
+  color: #8892a4;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-settings:hover {
+  color: #64c8ff;
+  border-color: #64c8ff;
 }
 
 /* ── Main ── */

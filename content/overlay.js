@@ -82,7 +82,7 @@ window.SCOverlay = (() => {
 
   function _buildExportButton(canvas) {
     const btn = document.createElement('button');
-    btn.textContent = '⬇ Exporter en PNG';
+    btn.textContent = 'Exporter en PNG';
     btn.style.cssText = `
       padding: 10px 24px;
       font: 600 14px 'Segoe UI', sans-serif;
