@@ -1,6 +1,6 @@
 # Screen Code
 
-> Inspectez et capturez n'importe quel élément d'une page web en un clic, puis exportez-le en PNG.
+> Inspectez et capturez n'importe quel élément d'une page web en un clic, puis exportez-le en PNG, JPEG ou WebP.
 
 ---
 
@@ -8,11 +8,13 @@
 
 1. Cliquez sur l'icône de l'extension pour ouvrir la popup.
 2. Appuyez sur **Capture**.
-3. Survolez les éléments de la page
+3. Survolez les éléments de la page.
 4. Cliquez sur l'élément voulu.
 5. Un overlay apparaît avec l'aperçu cropé de l'élément.
-6. Cliquez sur **Exporter en PNG** pour télécharger l'image.
-7. Appuyez sur **Échap** ou cliquez en dehors de l'overlay pour annuler.
+6. Ajustez l'**arrondi des coins** avec le slider.
+7. Si l'élément dépasse le viewport, choisissez de **couper** l'image ou de **capturer le reste** via le menu déroulant.
+8. Cliquez sur **Exporter** pour télécharger l'image dans le format choisi (PNG / JPEG / WebP).
+9. Appuyez sur **Échap** ou cliquez en dehors de l'overlay pour annuler.
 
 ---
 
@@ -38,7 +40,7 @@ Screen-Code/
 │
 └── content/
     ├── highlight.js            Module SCHighlight — encadré + label
-    ├── overlay.js              Module SCOverlay — aperçu + export PNG
+    ├── overlay.js              Module SCOverlay — aperçu + export
     └── inspector.js            Point d'entrée — orchestration générale
 ```
 
@@ -60,8 +62,8 @@ Déclare :
 ### `popup/popup.html`
 Structure HTML de la popup (320px de large).  
 Contient :
-- Un **header** avec le logo `[{}]`, le titre et un bouton engrenage ⚙
-- Un bouton **Capture** avec l'icône `CameraOutlined` (Ant Design)
+- Un **header** avec le logo `[{}]`, le titre et un bouton engrenage
+- Un bouton **Capture**
 
 ---
 
@@ -108,9 +110,25 @@ Gère l'**overlay** affiché après la sélection d'un élément.
 
 | Méthode | Description |
 |---|---|
-| `SCOverlay.show(imgDataUrl, rect)` | Affiche l'overlay avec le screenshot cropé sur `rect`, le bouton **Exporter en PNG** et le bouton **Fermer** |
+| `SCOverlay.show(imgDataUrl, rect, element)` | Affiche l'overlay avec le screenshot cropé sur `rect`, les contrôles de personnalisation et les boutons d'export |
 
 Le crop est réalisé via un `<canvas>` en tenant compte du `devicePixelRatio` pour les écrans Retina.
+
+**Composants de l'overlay :**
+
+| Composant | Description |
+|---|---|
+| Slider **Arrondi** | Permet d'arrondir les coins de l'image (0 → rayon max). Piste remplie dynamiquement, thumb avec glow, badge de valeur animé |
+| Bannière **Élément partiel** | Apparaît si l'élément dépasse le bas du viewport ou du conteneur scrollable. Affiche les pixels visibles vs totaux |
+| Menu **Options** (bannière) | Deux choix : **Couper ici** (rogner à la zone déjà capturée) ou **Charger le reste** (scroll-capture automatique des pixels manquants) |
+| Bouton **Exporter** | Split-button avec sélecteur de format : PNG, JPEG, WebP |
+| Bouton **Fermer** | Ferme l'overlay |
+
+**Scroll-capture (`_scrollCaptureRest`) :**  
+Lorsque l'utilisateur choisit *Charger le reste*, l'overlay se masque et le script fait défiler la page (ou le conteneur scrollable parent de l'élément) par tranches d'un viewport, capture chaque tranche via `captureTab` et l'assemble dans le canvas. Un toast de progression (barre + compteur px) est affiché pendant la capture. La position de scroll est restaurée à la fin.
+
+**Détection du conteneur scrollable (`_findScrollableContainer`) :**  
+Remonte le DOM depuis l'élément capturé pour trouver le premier ancêtre avec `overflow: auto/scroll` et un débordement réel. Utilisé pour faire défiler le bon élément (et non `window`) sur les pages où le scroll principal est géré par un `div` interne.
 
 ---
 
@@ -132,7 +150,7 @@ activateInspector (message)
                                           │
                               background.js répond avec dataUrl
                                           │
-                                  SCOverlay.show(dataUrl, rect)
+                              SCOverlay.show(dataUrl, rect, element)
 ```
 
 Contient un **guard anti-double-injection** (`window.__screenCodeInjected`) : si le script est injecté une seconde fois, il réactive l'inspecteur directement via `window.__screenCodeActivate()` sans recréer les listeners.

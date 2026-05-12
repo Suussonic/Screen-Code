@@ -37,7 +37,7 @@ if (!window.__screenCodeInjected) {
 
     // Demande un screenshot au background service worker
     chrome.runtime.sendMessage({ action: 'captureTab', rect }, (res) => {
-      if (res?.dataUrl) SCOverlay.show(res.dataUrl, rect);
+      if (res?.dataUrl) SCOverlay.show(res.dataUrl, rect, currentTarget);
     });
   }
 
