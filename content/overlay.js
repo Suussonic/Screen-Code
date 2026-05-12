@@ -16,8 +16,12 @@ window.SCOverlay = (() => {
     const canvas  = _buildCanvas(rect);
     _drawCroppedImage(canvas, imgDataUrl, rect);
 
-    const buttons = _buildButtons(canvas, overlay);
-    overlay.append(canvas, buttons);
+    let currentRadius = 0;
+    const getRadius = () => currentRadius;
+
+    const slider  = _buildRadiusSlider(canvas, (r) => { currentRadius = r; });
+    const buttons = _buildButtons(canvas, overlay, getRadius);
+    overlay.append(slider, canvas, buttons);
     document.body.appendChild(overlay);
   }
 
@@ -73,14 +77,140 @@ window.SCOverlay = (() => {
     img.src = imgDataUrl;
   }
 
-  function _buildButtons(canvas, overlay) {
+  function _buildButtons(canvas, overlay, getRadius) {
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display: flex; gap: 10px;';
-    wrap.append(_buildExportButton(canvas), _buildCloseButton(overlay));
+    wrap.append(_buildExportButton(canvas, getRadius), _buildCloseButton(overlay));
     return wrap;
   }
 
-  function _buildExportButton(canvas) {
+  function _buildRadiusSlider(canvas, setRadius) {
+    const maxRadius = Math.min(canvas.width, canvas.height) / 2;
+
+    // Inject custom slider styles once
+    if (!document.getElementById('__sc-slider-styles')) {
+      const style = document.createElement('style');
+      style.id = '__sc-slider-styles';
+      style.textContent = `
+        #__sc-radius-input {
+          -webkit-appearance: none;
+          appearance: none;
+          flex: 1;
+          height: 5px;
+          border-radius: 3px;
+          outline: none;
+          cursor: pointer;
+          background: linear-gradient(
+            to right,
+            #64c8ff 0%,
+            #64c8ff var(--sc-val, 0%),
+            rgba(100, 200, 255, 0.15) var(--sc-val, 0%),
+            rgba(100, 200, 255, 0.15) 100%
+          );
+        }
+        #__sc-radius-input::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #ffffff;
+          border: 3px solid #64c8ff;
+          box-shadow: 0 0 0 3px rgba(100, 200, 255, 0.2), 0 2px 8px rgba(0,0,0,0.4);
+          cursor: pointer;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        #__sc-radius-input::-webkit-slider-thumb:hover {
+          transform: scale(1.25);
+          box-shadow: 0 0 0 5px rgba(100, 200, 255, 0.25), 0 4px 14px rgba(100, 200, 255, 0.5);
+        }
+        #__sc-radius-input::-moz-range-thumb {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #ffffff;
+          border: 3px solid #64c8ff;
+          box-shadow: 0 0 0 3px rgba(100, 200, 255, 0.2);
+          cursor: pointer;
+          transition: transform 0.15s ease;
+        }
+        #__sc-radius-input::-moz-range-track {
+          height: 5px;
+          border-radius: 3px;
+          background: rgba(100, 200, 255, 0.15);
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      background: rgba(10, 14, 30, 0.92);
+      border: 1px solid rgba(100, 200, 255, 0.18);
+      border-radius: 12px;
+      width: min(90vw, ${canvas.width}px);
+      box-sizing: border-box;
+      backdrop-filter: blur(10px);
+    `;
+
+    const icon = document.createElement('span');
+    icon.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 13V8C2 4.686 4.686 2 8 2h5" stroke="#64c8ff" stroke-width="2" stroke-linecap="round"/></svg>`;
+    icon.style.cssText = `flex-shrink: 0; display: flex; align-items: center; opacity: 0.85;`;
+
+    const label = document.createElement('span');
+    label.textContent = 'Arrondi';
+    label.style.cssText = `
+      font: 500 12px 'Segoe UI', sans-serif;
+      color: #8892a4;
+      white-space: nowrap;
+      flex-shrink: 0;
+    `;
+
+    const input = document.createElement('input');
+    input.type  = 'range';
+    input.min   = '0';
+    input.max   = '100';
+    input.value = '0';
+    input.id    = '__sc-radius-input';
+    input.style.cssText = 'flex: 1;';
+    input.style.setProperty('--sc-val', '0%');
+
+    const valuePill = document.createElement('span');
+    valuePill.textContent = '0px';
+    valuePill.style.cssText = `
+      font: 600 11px 'Consolas', monospace;
+      color: #0a0e1e;
+      background: linear-gradient(135deg, #64c8ff, #3a8fd4);
+      padding: 3px 8px;
+      border-radius: 20px;
+      min-width: 42px;
+      text-align: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(100, 200, 255, 0.35);
+      transition: transform 0.1s ease;
+    `;
+
+    input.addEventListener('input', () => {
+      const pct = `${input.value}%`;
+      input.style.setProperty('--sc-val', pct);
+      const r = Math.round((input.value / 100) * maxRadius);
+      setRadius(r);
+      canvas.style.borderRadius = r + 'px';
+      valuePill.textContent = r + 'px';
+      valuePill.style.transform = 'scale(1.1)';
+      clearTimeout(valuePill.__st);
+      valuePill.__st = setTimeout(() => { valuePill.style.transform = 'scale(1)'; }, 120);
+    });
+
+    wrap.append(icon, label, input, valuePill);
+    return wrap;
+  }
+
+  function _buildExportButton(canvas, getRadius) {
     const formats = [
       { label: 'PNG',  value: 'png',  mime: 'image/png' },
       { label: 'JPEG', value: 'jpeg', mime: 'image/jpeg' },
@@ -112,9 +242,20 @@ window.SCOverlay = (() => {
       border-right: 1px solid rgba(0, 0, 0, 0.2);
     `;
     btn.addEventListener('click', () => {
+      const radius  = getRadius();
+      const out     = document.createElement('canvas');
+      out.width     = canvas.width;
+      out.height    = canvas.height;
+      const ctx     = out.getContext('2d');
+      if (radius > 0) {
+        ctx.beginPath();
+        _roundRectPath(ctx, 0, 0, out.width, out.height, radius);
+        ctx.clip();
+      }
+      ctx.drawImage(canvas, 0, 0);
       const link    = document.createElement('a');
       link.download = `screen-code-${Date.now()}.${currentFormat.value}`;
-      link.href     = canvas.toDataURL(currentFormat.mime);
+      link.href     = out.toDataURL(currentFormat.mime);
       link.click();
     });
 
@@ -189,6 +330,21 @@ window.SCOverlay = (() => {
     wrapper.appendChild(toggle);
     wrapper.appendChild(menu);
     return wrapper;
+  }
+
+  function _roundRectPath(ctx, x, y, w, h, r) {
+    const maxR = Math.min(w, h) / 2;
+    r = Math.min(r, maxR);
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.arcTo(x + w, y,     x + w, y + r,     r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h);
+    ctx.arcTo(x,     y + h, x,         y + h - r, r);
+    ctx.lineTo(x,     y + r);
+    ctx.arcTo(x,     y,     x + r,     y,         r);
+    ctx.closePath();
   }
 
   function _buildCloseButton(overlay) {
