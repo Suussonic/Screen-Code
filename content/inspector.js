@@ -35,10 +35,12 @@ if (!window.__screenCodeInjected) {
     SCHighlight.hide();
     deactivate();
 
-    // Demande un screenshot au background service worker
-    chrome.runtime.sendMessage({ action: 'captureTab', rect }, (res) => {
-      if (res?.dataUrl) SCOverlay.show(res.dataUrl, rect, currentTarget);
-    });
+    // Attend 2 frames que le navigateur re-rende la page sans le highlight
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      chrome.runtime.sendMessage({ action: 'captureTab', rect }, (res) => {
+        if (res?.dataUrl) SCOverlay.show(res.dataUrl, rect, currentTarget);
+      });
+    }));
   }
 
   function onKeyDown(e) {
